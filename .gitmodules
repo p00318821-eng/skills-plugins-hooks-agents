@@ -4,3 +4,6 @@
 [submodule "mattpocock/skills"]
 	path = mattpocock/skills
 	url = https://github.com/mattpocock/skills.git
+[submodule "changyuanyu/mbti-persona-skill"]
+	path = changyuanyu/mbti-persona-skill
+	url = https://github.com/ChangyuanYU/mbti-persona-skill.git
