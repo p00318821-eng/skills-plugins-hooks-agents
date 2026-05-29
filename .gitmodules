@@ -1,3 +1,6 @@
 [submodule "one-skill-to-rule-them-all"]
 	path = one-skill-to-rule-them-all
 	url = https://github.com/p00318821-eng/one-skill-to-rule-them-all.git
+[submodule "mattpocock/skills"]
+	path = mattpocock/skills
+	url = https://github.com/mattpocock/skills.git
