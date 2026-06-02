@@ -1,6 +1,6 @@
-# ben-skills
+# skills
 
-My long-term personal skills library.
+My long-term personal skills library (repository renamed from `ben-skills`).
 
 Each top-level directory is a single, self-contained skill (a `SKILL.md` at its
 root, plus any reference files it needs). Skills are stored as plain folders —
