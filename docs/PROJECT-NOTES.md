@@ -28,7 +28,7 @@ tree. Kept here so they survive beyond any single working session.
 
 ## Updating sourced skills
 
-`skill-plugin-sources.json` is the source-of-truth manifest; `update-sourced-skills.ipynb`
+`manifests/origins.json` is the source-of-truth manifest; `update-sourced-skills.ipynb`
 is the tool. The notebook shallow-clones each upstream repo, diffs its `subpath`
 against the local folder, prints a per-skill change-list (with diffs), and lets
 you apply or disregard each update.
@@ -68,8 +68,37 @@ bugs — recorded here so they're not rediscovered later.
   repo can treat them as individual vendored skills.
 - Updated `plugins/README.md` and `skills/README.md` with attribution for the
   new plugin sources and skill names.
-- Extended `skill-plugin-sources.json` to track the new plugin directories, so
+- Extended `manifests/origins.json` to track the new plugin directories, so
   `update-sourced-skills.ipynb` can sync them in the future.
+
+## Distribution system
+
+The repo now includes a _distribute_ capability alongside the existing _pull_
+mechanism. The distribution side pushes skill prompts into target files (e.g.
+CLAUDE.md, copilot-instructions.md) for multiple AI tool environments.
+
+### How it works
+
+1. `manifests/destinations.json` defines where skills go — each entry has a
+   `target_file` (with `{HOME}` expansion), a list of `skills_assigned`, and an
+   `enabled` toggle.
+2. `scripts/sync_engine.py` is the shared Python library. Its `inject_markdown()`
+   function uses HTML-comment boundary markers (`<!-- MANAGED-SKILLS:START -->` /
+   `<!-- MANAGED-SKILLS:END -->`) to idempotently replace only the managed
+   section, preserving any manual content outside the markers.
+3. `sync_orchestrator.ipynb` is the interactive tool: Init → Build Cache →
+   Distribute → Report.
+
+### Cache directory
+
+Skill prompts are cached in `.cache/prompts/` (gitignored) as flat `.md` files.
+This avoids mixing build artifacts with the vendored `skills/` folders.
+
+### Relationship to the update notebook
+
+`update-sourced-skills.ipynb` handles _pulling_ from upstream repos.
+`sync_orchestrator.ipynb` handles _distributing_ to local AI tool configs.
+They share `manifests/origins.json` but do different jobs.
 
 ## Local environment notes
 

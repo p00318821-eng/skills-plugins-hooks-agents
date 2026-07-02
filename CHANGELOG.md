@@ -3,6 +3,27 @@
 ## Unreleased
 
 ### Added
+- Distribution system: `scripts/sync_engine.py` engine with idempotent
+  boundary-marker injection, `sync_orchestrator.ipynb` notebook, and
+  `manifests/destinations.json` manifest for routing skills to AI tool
+  environments.
+- `CLAUDE.md` with file map, SOPs, and environment gotchas.
+- `.env.example` and `requirements.txt` (python-dotenv).
+- `.cache/` directory (gitignored) for intermediate prompt cache.
+
+### Changed
+- Migrated `skill-plugin-sources.json` to `manifests/origins.json` (format v2)
+  with `type` and `format` fields. Old path is a one-line redirect stub.
+- Fixed stale `local` paths in origins manifest to reflect the `skills/` move
+  (e.g. `"grill-me"` → `"skills/grill-me"`).
+- Updated `update-sourced-skills.ipynb` to read from `manifests/origins.json`.
+- Expanded `.gitignore` to cover `.cache/`, `.env`, and `__pycache__/`.
+
+---
+
+## Previous
+
+### Added
 - `skill-plugin-sources.json` manifest and `update-sourced-skills.ipynb` notebook to
   check externally-sourced skills for upstream updates, show a per-skill
   change-list with diffs, and apply or disregard each one.
