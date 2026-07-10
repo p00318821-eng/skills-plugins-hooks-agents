@@ -57,6 +57,76 @@
   migration cleanliness) since both gaps are reusable lessons, not one-off fixes. Round 1
   (Hub-and-Spoke adoption) shipped 2026-07-02 — see `.ai/archive/2026-07-shipped.md`.
 
+- **Round 4 — Hook/agent extraction (`memory-architect` + `rayfin-companion`),
+  2026-07-10 — shipped in this repo, held (not pushed).** Split both skills
+  into skill + hook + agent pieces (see `.ai/rules/000-agent-operating-mandates.md`
+  peer note in `project-memory-template`'s
+  `.ai/rules/200-hook-authoring-conventions.md` for the authoring conventions
+  this round produced), tested against real installs — global
+  `~/.claude/settings.json` for `memory-architect`'s validation gate, both real
+  Rayfin App projects (`fabric-apps/fabric-app-campus-profile`,
+  `fabric-apps/fabric-app-student-profile`) for `rayfin-companion`'s hard-rules
+  hooks. Branch `feat/memory-architecture/hook-agent-extraction-round`: 3
+  commits — `049d9b6` (the split itself), `9672a63` (merged
+  `fix/github-mastery-protected-branch-guardrail`, protected-branch guardrail
+  + `~/.claude/hooks/protect-branches.js`), `8014428` (merged
+  `feat/deprecate-prepforai-global-hooks`, one hand-resolved `CHANGELOG.md`
+  conflict). Working tree clean. **Deliberately not pushed** — too much still
+  "in the air" to PR (see task 6 below).
+
+### Round 4 task queue (full detail lives in `project-memory-template`'s
+`.ai/PLAN.md` — this is the resume pointer for a session starting cold here
+instead of there). **Build order:** `0 → 5 → 2 → 1 → 3 → 7 → 8 → 4 → 6`
+(task 5 standardizes the hook/agent scaffold shape before tasks 3/7/8 each
+produce another one-off instance of it; task 4 needs task 5's rule shape for
+its versioning scheme). Task 0 (this file) is done as of this edit.
+
+1. **Resync the global `memory-architect` copy — SHIPPED 2026-07-10.** Added
+   `memory-architect` + `domain-modeling` to `destinations.json`'s
+   `skills_assigned` (claude-code-user + cloud-agents — neither was
+   registered). Used `sync_engine.copy_skill_folder` directly, not the full
+   destination sync, since `~/.claude/skills/` also holds an unrelated
+   `memory-architect-workspace/` eval directory the cleanup-inclusive sync
+   would have deleted. Verified byte-identical against repo source.
+2. **Register `memory-architect` in `origins.json` — SHIPPED 2026-07-10** as
+   an "own skill" `excluded` entry, matching `github-mastery`'s pattern.
+3. **Review `github-mastery` for remaining hook/agent opportunities**:
+   credential-leak prevention (`.env`/`.key`/token commits, same shape as
+   `guard-rayfin-secrets.cjs`) and commit-message/branch-naming enforcement.
+   Own plan-mode pass before building.
+5. **Full consolidation phase — SHIPPED 2026-07-10.** Added hook/agent
+   scaffold templates to `memory-architect/references/templates.md`; vendored
+   `skills/domain-modeling/` from upstream (forked to target `.ai/CONTEXT.md`/
+   `.ai/adr/`, tracked in `origins.json`'s `excluded` list like `caveman`);
+   thinned `grill-with-docs/SKILL.md` to a delegator matching upstream's real
+   shape; `memory-architect` SCAFFOLD now offers `.ai/CONTEXT.md`/`.ai/adr/`
+   as an optional sibling tier. **Flagged, not actioned:** `memory-architect`'s
+   own templates scaffold `.ai/project/`+`.ai/memory/`, but this repo (and
+   `project-memory-template`) actually use `PLAN.md`+`rules/`+`archive/` —
+   `memory-architect`'s own host repo doesn't follow its own scaffolded
+   structure. Real inconsistency, separate future task.
+7. **Planning-phase skill fan-in hook design** — `grill-me` unconditional,
+   `grill-with-docs` stage-gated (not repo-state-gated), `caveman` dropped,
+   `ponytail` kept as a `grill-me` peer. Formalizes a Plan Mode cycle: rough
+   plan → verify → branch (trivial inline / hard → record + loop back) →
+   crystallize → execute.
+8. **Skill-edit sync-check** — global `PostToolUse` hook on `Edit|Write`
+   warning (non-blocking) when `file_path` falls under a hardcoded downstream
+   root instead of this repo.
+4. **Pre-checkin environmental-sync gate** — local hook stays
+   fast/non-blocking; real enforcement in a pre-push hook (decided); template
+   owns rule *shape* one-way, versioned; "traveling" = conformance manifest +
+   thin comparison script, not live hook code.
+6. **Push/PR decision**, deferred until tasks 1-2 (or more) land — push all
+   three held branches (`skills-and-plugins`, `fabric-apps`,
+   `project-memory-template`) together, not piecemeal.
+9. **Vendor-fork tracking via SHA-based three-way diff** — queued 2026-07-10:
+   `domain-modeling`'s fork otherwise shows permanent false-positive diffs in
+   `update_engine.py` forever. Fix: reuse `last_synced_sha` (already tracked)
+   to also fetch upstream at that historical SHA, not just HEAD — no new
+   storage needed. Generalizes to `caveman` too. Full detail in
+   `project-memory-template/.ai/PLAN.md`.
+
 ## Open Blockers / Decisions
 
 - **Open architectural decision (not actioned):** `plugins/*` packages (e.g.
@@ -70,10 +140,11 @@
 
 ## Resume Pointer
 
-Round 3's file changes are shipped as of 2026-07-10, and the live-session hook
-verification (SessionStart, PostToolUse positive/negative, fail-open) is now confirmed —
-see Active Goals above. Remaining open items from the Part 5 checklist: re-run Phase 4
-distribution for `semantic-modeling-prepforai` and one sibling skill to confirm no
-regressions (plan items 9-11), and the trigger-avoidance smoke test (plan item 11). The
-plugin/skills byte-duplication decision from Round 2 is still open and unrelated to this
+**Active round is Round 4** (hook/agent extraction) — tasks 0, 5, 2, 1 done.
+Next: task 3 (review `github-mastery` for remaining hook/agent
+opportunities), per the build order above. Round 3 remains open in parallel and
+unblocked by Round 4: re-run Phase 4 distribution for
+`semantic-modeling-prepforai` and one sibling skill (plan items 9-11), plus
+the trigger-avoidance smoke test (plan item 11). The plugin/skills
+byte-duplication decision from Round 2 is still open and unrelated to either
 round.

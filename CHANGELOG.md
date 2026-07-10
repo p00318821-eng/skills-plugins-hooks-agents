@@ -5,6 +5,30 @@ tag — this repo doesn't version by release.
 
 ## 2026-07-10
 
+### Added (Round 4 — consolidation phase)
+- `skills/domain-modeling/`: vendored from `github.com/mattpocock/skills`
+  (`skills/engineering/domain-modeling`), forked to target `.ai/CONTEXT.md` /
+  `.ai/adr/` instead of upstream's root-level `CONTEXT.md` / `docs/adr/`, plus
+  one added rule (check for an existing HISD-glossary owner before adding a
+  term). Tracked in `manifests/origins.json`'s `excluded` list (locally
+  modified, same treatment as `caveman`).
+- `skills/memory-architect/references/templates.md`: hook/agent scaffold
+  templates (courtesy-copy reference-doc template, `.cjs` hook skeleton,
+  agent-definition skeleton) generalized from this round's two real, tested
+  examples (`memory-architect`'s own validation gate, `rayfin-companion`'s
+  hard-rules hooks); `.ai/CONTEXT.md` starter as an optional sibling tier to
+  `current-state.md`/`decisions.md`/`pitfalls.md`.
+- `manifests/origins.json`: registered `memory-architect` as an "own skill"
+  entry (`excluded` list), matching `github-mastery`'s existing pattern — its
+  repo footprint (`agents/`, `hooks/`, `scripts/`, four `references/*.md`
+  files) now warrants the same tracking.
+- `manifests/destinations.json`: added `memory-architect` and
+  `domain-modeling` to `claude-code-user`/`cloud-agents`' `skills_assigned`
+  (neither was registered anywhere, despite a stale hand-placed
+  `memory-architect` copy already existing at `~/.claude/skills/`). Resynced
+  both to `~/.claude/skills/` and `~/.agents/skills/` via
+  `sync_engine.copy_skill_folder`, verified byte-identical to repo source.
+
 ### Added
 - `memory-architect`: `scripts/detect-structure.js` (mechanical AUDIT/SCAFFOLD
   detection — file presence, legacy paths, template markers, repo type, on
@@ -46,6 +70,15 @@ tag — this repo doesn't version by release.
   denies `git commit` on `main`/`master`/`staging`/`develop`.
 
 ### Changed
+- `skills/grill-with-docs/SKILL.md`: thinned from an 89-line inlined copy of
+  `domain-modeling`'s interview/CONTEXT-maintenance logic down to a short
+  delegator matching upstream's real ~245-byte version — corrects a real
+  architectural divergence (our copy had inlined logic that upstream keeps in
+  a separate `domain-modeling` skill). `CONTEXT-FORMAT.md`/`ADR-FORMAT.md`
+  moved from `grill-with-docs/` to the new `domain-modeling/` folder.
+- `skills/memory-architect/SKILL.md`: SCAFFOLD mode's step 3 now lists
+  hook/agent scaffolding and `.ai/CONTEXT.md`/`.ai/adr/` as offer-don't-auto-
+  create options, alongside the existing on-demand file list.
 - `memory-architect/SKILL.md`: AUDIT and SCAFFOLD modes now call
   `scripts/detect-structure.js` instead of re-deriving file-presence/legacy/
   template-marker facts by hand; CONSOLIDATE mode now dispatches

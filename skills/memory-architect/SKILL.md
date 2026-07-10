@@ -168,6 +168,11 @@ or is starting a new repo.
      `operations.md` (when repo has non-trivial ops), `agents.md` (when `.agents/` exists),
      `decisions.md` (when prior decisions exist to record), `pitfalls.md` (when lessons
      have accumulated).
+   - **Offer, don't auto-create:** hook/agent scaffolding (when the repo has documented
+     Hard Rules/constraints but no enforcement hook yet) and `.ai/CONTEXT.md` +
+     `.ai/adr/` (when the repo also wants `domain-modeling`/`grill-with-docs` planning
+     sessions — not a replacement for `current-state.md`/`decisions.md`/`pitfalls.md`).
+     See [references/templates.md](references/templates.md) for both.
 
 4. **Wire `.claude/CLAUDE.md`** — create or update the navigation table to point to all
    `.ai/` docs. If CLAUDE.md doesn't exist, create a minimal one with the navigation table
