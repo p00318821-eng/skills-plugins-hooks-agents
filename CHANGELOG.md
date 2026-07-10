@@ -3,6 +3,42 @@
 Dated by the day the work actually shipped (per git history), not by release
 tag — this repo doesn't version by release.
 
+## 2026-07-10
+
+### Added
+- Two global Claude Code hooks (`~/.claude/settings.json` + `~/.claude/hooks/`,
+  outside this repo): `SessionStart` points Claude at HISD Power BI/Fabric
+  context once per session; `PostToolUse` (scoped to `.tmdl` edits/writes)
+  reminds Claude of HISD conventions after any `.tmdl` change — regardless of
+  which skill (vendored or first-party) drove the edit. Reference copy at
+  `skills/semantic-modeling-prepforai/references/global-hooks.md`.
+- `skills/semantic-modeling-prepforai/references/hisd-power-bi-context.md`:
+  consolidated HISD-specific content (synonym glossary, AI Instructions
+  template, dual synonym-annotation mechanics, AI-consumer compatibility
+  matrix, phantom-annotations list, relationship naming pattern) delivered by
+  the hooks above.
+- Fixed a pre-existing defect in the global `memory-architect` skill (outside
+  this repo, `~/.claude/skills/memory-architect/`): its JIT-delivery design
+  claimed a `PreToolUse` hook could inject `additionalContext` — verified
+  false against official docs and a closed GitHub issue. Corrected to
+  `PostToolUse` with `hookSpecificOutput.additionalContext` (not
+  `updatedToolOutput`, which replaces rather than appends).
+
+### Changed
+- `skills/semantic-modeling-prepforai/`: deprecated as an actively-invoked
+  skill. `SKILL.md` reduced to a deprecation notice; the manual copy/paste
+  TMDL workflow and its Truncation Prevention protocol are obsolete now that
+  editing happens via MCP-first tools. Folder retained only because it's
+  still `scripts/sync_engine.py`'s distribution vehicle to `~/.claude/skills/`
+  and `~/.agents/skills/`, which the new global hooks read from.
+- `manifests/origins.json`: updated the `semantic-modeling-prepforai` excluded
+  entry's `reason` to explain the deprecation and why the folder still exists.
+
+### Removed
+- `skills/semantic-modeling-prepforai/references/ai-compatibility-matrix.md`,
+  `references/naming-conventions.yml`: content absorbed into
+  `references/hisd-power-bi-context.md`.
+
 ## 2026-07-07
 
 ### Added
