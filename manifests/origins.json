@@ -227,6 +227,11 @@
       "reason": "Locally modified to suit personal use; do not auto-update. (Origin: Matt Pocock, MIT.)"
     },
     {
+      "name": "domain-modeling",
+      "local": "skills/domain-modeling",
+      "reason": "Locally modified; do not auto-update. (Origin: Matt Pocock, MIT — github.com/mattpocock/skills, skills/engineering/domain-modeling.) Forked 2026-07-10 to target .ai/CONTEXT.md / .ai/adr/ instead of upstream's root-level CONTEXT.md / docs/adr/, to stay inside this repo's .ai/ Standard; also added a rule to check for an existing HISD-glossary owner before adding a term. grill-with-docs (still tracked normally) delegates to this skill, matching upstream's own architecture."
+    },
+    {
       "name": "pbi-visual-rendering",
       "local": "skills/pbi-visual-rendering",
       "reason": "Own skill (Benjamin Hanna / Houston ISD)."
@@ -234,12 +239,17 @@
     {
       "name": "semantic-modeling-prepforai",
       "local": "skills/semantic-modeling-prepforai",
-      "reason": "Own skill (Benjamin Hanna / Houston ISD)."
+      "reason": "Own skill (Benjamin Hanna / Houston ISD). Deprecated as an actively-invoked skill 2026-07-10 in favor of global SessionStart/PostToolUse hooks (see references/global-hooks.md) — its HISD-specific content is consolidated in references/hisd-power-bi-context.md. Folder retained (not deleted) because it's still the distribution vehicle to ~/.claude/skills/ and ~/.agents/skills/, which the hooks read from."
     },
     {
       "name": "github-mastery",
       "local": "skills/github-mastery",
       "reason": "Own skill (Benjamin Hanna / Houston ISD)."
+    },
+    {
+      "name": "memory-architect",
+      "local": "skills/memory-architect",
+      "reason": "Own skill (Benjamin Hanna / Houston ISD). Repo footprint grew beyond a single SKILL.md this round (2026-07-10): agents/memory-consolidator.md, hooks/validation-gate.js, scripts/detect-structure.js, four references/*.md files — now warrants the same tracking as github-mastery."
     },
     {
       "name": "k12-dashboard-mockup",

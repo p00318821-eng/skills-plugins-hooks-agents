@@ -1,8 +1,10 @@
 # ADR Format
 
-ADRs live in `docs/adr/` and use sequential numbering: `0001-slug.md`, `0002-slug.md`, etc.
+> Forked from upstream `ADR-FORMAT.md` — targets `.ai/adr/` instead of `docs/adr/`. See the fork note in [SKILL.md](./SKILL.md).
 
-Create the `docs/adr/` directory lazily — only when the first ADR is needed.
+ADRs live in `.ai/adr/` and use sequential numbering: `0001-slug.md`, `0002-slug.md`, etc.
+
+Create the `.ai/adr/` directory lazily — only when the first ADR is needed.
 
 ## Template
 
@@ -24,7 +26,7 @@ Only include these when they add genuine value. Most ADRs won't need them.
 
 ## Numbering
 
-Scan `docs/adr/` for the highest existing number and increment by one.
+Scan `.ai/adr/` for the highest existing number and increment by one.
 
 ## When to offer an ADR
 

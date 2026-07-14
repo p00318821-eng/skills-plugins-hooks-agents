@@ -33,6 +33,11 @@ OK for cross-domain tasks.
 These apply to every code block generated. Violation = silent runtime bug or
 data loss.
 
+Rules 2, 3, 5, 7, 9, and 10 also have a hook backstop for the target Rayfin App
+project — see [references/repo-hooks.md](references/repo-hooks.md) for the two scripts and
+the `.claude/settings.json` wiring. The hooks catch what slips through after the
+fact; they don't replace applying these rules while generating code.
+
 1. `@entity()` on every table class.
 2. Primary key: `@uuid() id!: string` only. No composite keys, no custom names.
 3. **`{ optional: true }` in decorator** makes column nullable — TypeScript `?`

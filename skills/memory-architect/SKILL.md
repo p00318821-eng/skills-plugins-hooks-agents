@@ -91,18 +91,21 @@ Invocation: user asks to "audit docs", "audit memory", "check doc structure", or
 
 ### Procedure
 
-1. **Scan for `.ai/` structure.** Check for `project/` and `memory/` subdirectories
-   and each expected file.
+1. **Run `scripts/detect-structure.js <repo-root>`** to get the mechanical facts in
+   one shot: which `.ai/` standard files exist, which legacy root-level equivalents
+   are present and whether they're already migrated, which SECURITY.md/LICENSE/
+   CODE_OF_CONDUCT.md files carry template markers, and detected repo type. This
+   replaces hand-scanning for structure/legacy/template-marker presence — it's a
+   pure fact-lookup, not a judgment call, so don't re-derive it by reading files
+   one at a time.
 
-2. **Scan for legacy root-level equivalents.** If `.ai/` files are missing but root-level
-   equivalents exist (PLAN.md, OPERATIONS.md, etc.), score the *content* as present but
-   flag the *location* as non-standard. Do NOT penalize to F — the content exists, it just
-   needs migration.
+2. **Do NOT penalize location to F.** If the script's `legacy` output shows
+   root-level equivalents (PLAN.md, OPERATIONS.md, etc.) instead of `.ai/` files,
+   score the *content* as present but flag the *location* as non-standard — the
+   content exists, it just needs migration.
 
-3. **Detect template-owned files.** Read first 5 lines of SECURITY.md, LICENSE,
-   CODE_OF_CONDUCT.md. If they contain template markers ("BEGIN MICROSOFT SECURITY.MD",
-   "Copyright (c) Microsoft", "Microsoft Open Source Code of Conduct"), flag as
-   template-owned and skip — do NOT recommend moving or modifying.
+3. **Respect `templateOwned` flags from the script.** Never recommend moving or
+   modifying a file the script flagged `templateOwned: true`.
 
 4. **Score 9 dimensions on content quality** (0 = missing, 1 = partial, 2 = complete).
    Score based on whether the content exists and is comprehensive — NOT on whether it
@@ -146,21 +149,16 @@ or is starting a new repo.
 
 ### Procedure
 
-1. **Run silent audit** to identify what already exists.
+1. **Run `scripts/detect-structure.js <repo-root>`** — same script AUDIT uses. Its
+   `standard`/`legacy` fields tell you what already exists (silent audit), its
+   `repoType` field gives the Fabric App / Node-TS / Power BI / Python / generic
+   classification, and its `templateOwned` field flags SECURITY.md/LICENSE/
+   CODE_OF_CONDUCT.md files to never touch — no need to re-derive any of this by
+   hand.
 
-2. **Detect repo type** by scanning for markers:
-   - Fabric App: `rayfin.yml` present
-   - Node/TS: `package.json` present
-   - Power BI: `.pbip` or `.tmdl` files present
-   - Python: `pyproject.toml` or `requirements.txt` present
-   - Generic: none of the above
+2. **Create directories:** `.ai/project/` and `.ai/memory/`.
 
-3. **Detect template-sourced files** — scan for upstream markers in SECURITY.md, LICENSE,
-   CODE_OF_CONDUCT.md. Flag as template-owned, do not touch.
-
-4. **Create directories:** `.ai/project/` and `.ai/memory/`.
-
-5. **Generate starters for missing files** using templates from
+3. **Generate starters for missing files** using templates from
    [references/templates.md](references/templates.md). Rules:
    - Only create files that the repo type warrants (e.g., skip `operations.md` for a
      simple library with no deploy process).
@@ -170,12 +168,17 @@ or is starting a new repo.
      `operations.md` (when repo has non-trivial ops), `agents.md` (when `.agents/` exists),
      `decisions.md` (when prior decisions exist to record), `pitfalls.md` (when lessons
      have accumulated).
+   - **Offer, don't auto-create:** hook/agent scaffolding (when the repo has documented
+     Hard Rules/constraints but no enforcement hook yet) and `.ai/CONTEXT.md` +
+     `.ai/adr/` (when the repo also wants `domain-modeling`/`grill-with-docs` planning
+     sessions — not a replacement for `current-state.md`/`decisions.md`/`pitfalls.md`).
+     See [references/templates.md](references/templates.md) for both.
 
-6. **Wire `.claude/CLAUDE.md`** — create or update the navigation table to point to all
+4. **Wire `.claude/CLAUDE.md`** — create or update the navigation table to point to all
    `.ai/` docs. If CLAUDE.md doesn't exist, create a minimal one with the navigation table
    and a placeholder for agent SOPs.
 
-7. **Migration checklist** — if root-level equivalents exist, output a numbered checklist:
+5. **Migration checklist** — if root-level equivalents exist, output a numbered checklist:
    ```
    Migration checklist:
    1. [ ] Move PLAN.md → .ai/memory/current-state.md
@@ -193,35 +196,18 @@ Invocation: user asks to "consolidate", "crystallize session", "clean up memory"
 
 ### Procedure
 
-1. **Scan ephemeral state:**
-   - `~/.claude/projects/.../memory/*.md` for the current project
-   - `~/.claude/plans/*.md` for active/completed plans
-   - Read each file and extract content not already in repo `.ai/` files.
+Dispatch the `memory-consolidator` agent (see [agents/memory-consolidator.md](agents/memory-consolidator.md)
+and [references/agents.md](references/agents.md)) rather than running the
+scan/classify/propose loop inline — this mode does its own multi-source file
+scanning and independent classification, which is what an agent is for. Wait for
+the agent's proposal, get user approval, then let it (or you, if the agent isn't
+installed yet) make the approved edits.
 
-2. **Classify each piece** against the boundary-rules table above. For each unique finding,
-   identify the target `.ai/` file and the specific section where it belongs.
-
-3. **Propose insertions** — show each piece with its target file and insertion point.
-   Format as diffs or quoted blocks. Let the user approve before writing.
-
-4. **Archive shipped work:**
-   - Move completed goals/phases from `current-state.md` to `decisions.md`.
-   - Each archived decision should include: what was decided, why, what alternatives
-     were rejected, and the **reversal cost** (how hard it would be to undo).
-
-5. **Purge stale references:**
-   - Grep the repo for ephemeral paths: `~/.claude/plans/`, `~/.claude/projects/`,
-     bare `memory/` references.
-   - Flag any matches for cleanup.
-
-6. **Validation gate** (if available):
-   - Run `npm run build` + `npm run lint` (if `package.json` exists)
-   - Run `npm run check:docs` (if the script exists)
-   - Report pass/fail.
-
-7. **Summary** — output a table: what was promoted (and where), what was archived,
-   what was discarded (already present or derivable from code), what stale references
-   were found.
+If the global validation-gate `Stop` hook is wired (see
+[references/global-hooks.md](references/global-hooks.md)), it runs build/lint/check:docs
+automatically once `.ai/` changes are detected as dirty — you don't need to run
+them yourself. If it isn't wired yet, run `npm run build`/`lint`/`check:docs`
+(whichever exist) directly and report pass/fail as part of the summary.
 
 ## Cross-Cutting Rules
 

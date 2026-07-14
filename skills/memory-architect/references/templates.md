@@ -259,6 +259,158 @@ Template and sub-agent delegation patterns for this project.
 
 ---
 
+## Hook & agent scaffolding (optional — offer, don't auto-create)
+
+Generalized from this round's two real, tested examples (`memory-architect`'s
+own `hooks/validation-gate.js` + `references/global-hooks.md`, and
+`rayfin-companion`'s `hooks/*.cjs` + `references/repo-hooks.md`). Offer these
+when a repo already has documented Hard Rules/constraints
+(`.ai/project/constraints.md` or equivalent) but no enforcement hook yet —
+never as part of the default `current-state.md`/`constraints.md` always-create
+set. Before writing either skeleton, read
+[`project-memory-template`'s `.ai/rules/200-hook-authoring-conventions.md`](../../../../project-memory-template/.ai/rules/200-hook-authoring-conventions.md)
+for the naming (`global-hooks.md` vs `repo-hooks.md`) and blocking-schema rules
+— don't re-derive them here.
+
+### `references/<scope>-hooks.md` (courtesy-copy reference doc)
+
+```markdown
+# {Rule name} enforcement hook (reference copy)
+
+**Status:** {installed at <path> | not yet installed}.
+
+{One paragraph: what Hard Rule(s) this backstops, and why a hook rather than
+relying on the skill alone (generation-time guidance can be missed under
+pressure or skipped entirely if the skill isn't loaded).}
+
+{global-hooks.md: state this hook is global — installs once in
+~/.claude/settings.json / ~/.claude/hooks/, self-scopes per-repo. |
+repo-hooks.md: state this hook is repo-scoped — only meaningful inside this
+project type, must be copied into the target project's own
+.claude/settings.json.}
+
+**Known limitation:** <!-- TODO: what this hook can't catch, e.g. relies on
+npm scripts only, or can't see .gitignore state from a command string alone. -->
+
+## `.claude/settings.json` (hooks section)
+
+​```jsonc
+{
+  "hooks": {
+    "<PreToolUse|PostToolUse|Stop>": [
+      {
+        "matcher": "<tool name or omit for Stop>",
+        "hooks": [
+          { "type": "command", "command": "node \"<path to hook script>\"" }
+        ]
+      }
+    ]
+  }
+}
+​```
+
+## `<hook-script-name>.cjs`
+
+<!-- TODO: One paragraph describing the mechanism (self-filter condition,
+deny vs warn, fail-open posture). Full source: [`../hooks/<name>.cjs`](../hooks/<name>.cjs). -->
+```
+
+### `hooks/<name>.cjs` (script skeleton)
+
+```javascript
+#!/usr/bin/env node
+// <PreToolUse|PostToolUse|Stop> hook — <global|repo-scoped>, <one-line trigger description>.
+//
+// <!-- TODO: which Hard Rule(s) this backstops and why a hook, not just the skill. -->
+//
+// IMPORTANT — the two blocking schemas are NOT interchangeable, don't guess:
+//   PreToolUse deny:  exit 0, JSON stdout with
+//     hookSpecificOutput.permissionDecision: "deny" + permissionDecisionReason
+//   Stop block:       exit 0, JSON stdout with top-level decision: "block" + reason
+//     (NOT nested under hookSpecificOutput) — also check incoming
+//     stop_hook_active and allow silently if already true, or this loops.
+//
+// Fails open on every unexpected condition (parse errors, missing files,
+// thrown errors) — never let this hook itself become the failure.
+
+function readStdin() {
+  try {
+    return require("fs").readFileSync(0, "utf-8");
+  } catch {
+    return "";
+  }
+}
+
+let input;
+try {
+  input = JSON.parse(readStdin());
+} catch {
+  process.exit(0); // fail open
+}
+
+// <!-- TODO: self-filter — e.g. `if (input.tool_name !== "Bash") process.exit(0);`
+// or `if (!/\.tmdl$/.test(input.tool_input?.file_path || "")) process.exit(0);` -->
+
+try {
+  // <!-- TODO: the actual check. -->
+} catch {
+  // fail open
+}
+
+process.exit(0);
+```
+
+### `agents/<name>.md` (agent skeleton)
+
+Only scaffold an agent when the task is genuinely agent-shaped — bounded,
+multi-source, requires independent judgment across content not yet seen (the
+`memory-consolidator` test, see [references/agents.md](agents.md)). A
+single-pass lookup or fixed-rubric check stays inline in the skill; it doesn't
+need an agent.
+
+```markdown
+---
+name: <agent-name>
+description: >
+  <!-- TODO: what it scans, what it proposes, when to dispatch it (trigger
+  phrases or conditions). Be specific — this is what makes the Agent tool
+  select it correctly. -->
+tools: <deliberately restricted list — no broader than the task needs>
+model: sonnet
+---
+
+<!-- TODO: procedure. End with a proposal/summary handed back for user
+approval — don't grant unilateral write authority unless the calling skill
+explicitly does. -->
+```
+
+---
+
+## `.ai/CONTEXT.md` (optional sibling tier — via `domain-modeling`)
+
+Not a replacement for `current-state.md`/`decisions.md`/`pitfalls.md` — a
+narrow terminology glossary + ADR log, a different job than this Standard's
+broader operating-memory. Offer only when the repo also wants
+`domain-modeling`/`grill-with-docs` planning sessions. Don't hand-write
+content — `domain-modeling` creates this lazily on the first resolved term;
+scaffold only the empty shell if the user wants the file to exist before that:
+
+```markdown
+# {Context Name}
+
+<!-- TODO: one or two sentences — what this context is and why it exists. -->
+
+## Language
+
+<!-- TODO: terms get added here as domain-modeling resolves them. See
+domain-modeling/CONTEXT-FORMAT.md for the format. -->
+```
+
+`.ai/adr/` needs no starter — `domain-modeling` creates it on the first
+qualifying ADR, same as `.ai/CONTEXT.md`.
+
+---
+
 ## `.claude/CLAUDE.md` (navigator template)
 
 ```markdown

@@ -3,6 +3,111 @@
 Dated by the day the work actually shipped (per git history), not by release
 tag — this repo doesn't version by release.
 
+## 2026-07-10
+
+### Added (Round 4 — consolidation phase)
+- `skills/domain-modeling/`: vendored from `github.com/mattpocock/skills`
+  (`skills/engineering/domain-modeling`), forked to target `.ai/CONTEXT.md` /
+  `.ai/adr/` instead of upstream's root-level `CONTEXT.md` / `docs/adr/`, plus
+  one added rule (check for an existing HISD-glossary owner before adding a
+  term). Tracked in `manifests/origins.json`'s `excluded` list (locally
+  modified, same treatment as `caveman`).
+- `skills/memory-architect/references/templates.md`: hook/agent scaffold
+  templates (courtesy-copy reference-doc template, `.cjs` hook skeleton,
+  agent-definition skeleton) generalized from this round's two real, tested
+  examples (`memory-architect`'s own validation gate, `rayfin-companion`'s
+  hard-rules hooks); `.ai/CONTEXT.md` starter as an optional sibling tier to
+  `current-state.md`/`decisions.md`/`pitfalls.md`.
+- `manifests/origins.json`: registered `memory-architect` as an "own skill"
+  entry (`excluded` list), matching `github-mastery`'s existing pattern — its
+  repo footprint (`agents/`, `hooks/`, `scripts/`, four `references/*.md`
+  files) now warrants the same tracking.
+- `manifests/destinations.json`: added `memory-architect` and
+  `domain-modeling` to `claude-code-user`/`cloud-agents`' `skills_assigned`
+  (neither was registered anywhere, despite a stale hand-placed
+  `memory-architect` copy already existing at `~/.claude/skills/`). Resynced
+  both to `~/.claude/skills/` and `~/.agents/skills/` via
+  `sync_engine.copy_skill_folder`, verified byte-identical to repo source.
+
+### Added
+- `memory-architect`: `scripts/detect-structure.js` (mechanical AUDIT/SCAFFOLD
+  detection — file presence, legacy paths, template markers, repo type, on
+  demand, not a hook — there's no tool-use event that means "run an audit"),
+  `hooks/validation-gate.js` (global `Stop` hook: blocks ending a turn if `.ai/`
+  is dirty and `build`/`lint`/`check:docs` fail; installed live in
+  `~/.claude/settings.json` + `~/.claude/hooks/`), `agents/memory-consolidator.md`
+  (dispatchable agent for CONSOLIDATE mode's scan/classify/propose loop),
+  `references/global-hooks.md`, `references/agents.md`.
+- `rayfin-companion`: `hooks/check-rayfin-rules.cjs` (`PostToolUse` backstop for
+  hard rules 2/3/5/7/9) and `hooks/guard-rayfin-secrets.cjs` (`PreToolUse` guard
+  blocking `git add`/`commit` of `rayfin/.env`/`rayfin/.temp/`, rule 10),
+  `references/repo-hooks.md`. Installed live into both real Rayfin App projects
+  (`fabric-apps/fabric-app-campus-profile`,
+  `fabric-apps/fabric-app-student-profile`).
+- `.ai/rules/200-hook-authoring-conventions.md` equivalent promoted upstream to
+  `project-memory-template` (this repo's canonical reference) — see that repo's
+  changelog/PLAN for the consolidation pass.
+- Two global Claude Code hooks (`~/.claude/settings.json` + `~/.claude/hooks/`,
+  outside this repo): `SessionStart` points Claude at HISD Power BI/Fabric
+  context once per session; `PostToolUse` (scoped to `.tmdl` edits/writes)
+  reminds Claude of HISD conventions after any `.tmdl` change — regardless of
+  which skill (vendored or first-party) drove the edit. Reference copy at
+  `skills/semantic-modeling-prepforai/references/global-hooks.md`.
+- `skills/semantic-modeling-prepforai/references/hisd-power-bi-context.md`:
+  consolidated HISD-specific content (synonym glossary, AI Instructions
+  template, dual synonym-annotation mechanics, AI-consumer compatibility
+  matrix, phantom-annotations list, relationship naming pattern) delivered by
+  the hooks above.
+- Fixed a pre-existing defect in the global `memory-architect` skill (outside
+  this repo, `~/.claude/skills/memory-architect/`): its JIT-delivery design
+  claimed a `PreToolUse` hook could inject `additionalContext` — verified
+  false against official docs and a closed GitHub issue. Corrected to
+  `PostToolUse` with `hookSpecificOutput.additionalContext` (not
+  `updatedToolOutput`, which replaces rather than appends).
+- `skills/github-mastery/SKILL.md`: promoted "never commit to a protected
+  branch" to an explicit Guardrail with a pre-commit branch check, backed by a
+  new global `PreToolUse` hook (`~/.claude/hooks/protect-branches.js`) that
+  denies `git commit` on `main`/`master`/`staging`/`develop`.
+
+### Changed
+- `skills/grill-with-docs/SKILL.md`: thinned from an 89-line inlined copy of
+  `domain-modeling`'s interview/CONTEXT-maintenance logic down to a short
+  delegator matching upstream's real ~245-byte version — corrects a real
+  architectural divergence (our copy had inlined logic that upstream keeps in
+  a separate `domain-modeling` skill). `CONTEXT-FORMAT.md`/`ADR-FORMAT.md`
+  moved from `grill-with-docs/` to the new `domain-modeling/` folder.
+- `skills/memory-architect/SKILL.md`: SCAFFOLD mode's step 3 now lists
+  hook/agent scaffolding and `.ai/CONTEXT.md`/`.ai/adr/` as offer-don't-auto-
+  create options, alongside the existing on-demand file list.
+- `memory-architect/SKILL.md`: AUDIT and SCAFFOLD modes now call
+  `scripts/detect-structure.js` instead of re-deriving file-presence/legacy/
+  template-marker facts by hand; CONSOLIDATE mode now dispatches
+  `memory-consolidator` instead of running the scan/classify/propose loop inline.
+- `rayfin-companion/SKILL.md`: Hard Rules section now points at the hook
+  backstop for rules 2/3/5/7/9/10.
+- Hook reference-doc naming standardized: `global-hooks.md` (installs once,
+  applies to every repo) vs `repo-hooks.md` (installs per target project) —
+  `memory-architect` and `rayfin-companion` renamed to match; `hooks/*.js`
+  renamed to `hooks/*.cjs` for `rayfin-companion` after both real installs threw
+  `ReferenceError: require is not defined` in the target projects' ESM
+  (`"type": "module"`) `package.json`.
+- `skills/semantic-modeling-prepforai/`: deprecated as an actively-invoked
+  skill. `SKILL.md` reduced to a deprecation notice; the manual copy/paste
+  TMDL workflow and its Truncation Prevention protocol are obsolete now that
+  editing happens via MCP-first tools. Folder retained only because it's
+  still `scripts/sync_engine.py`'s distribution vehicle to `~/.claude/skills/`
+  and `~/.agents/skills/`, which the new global hooks read from.
+- `manifests/origins.json`: updated the `semantic-modeling-prepforai` excluded
+  entry's `reason` to explain the deprecation and why the folder still exists.
+
+### Removed
+- `skills/rayfin-companion/rayfin-companion/` — stale nested duplicate (byte-
+  identical reference files, missing only `data-app-template.md` versus the
+  root copy).
+- `skills/semantic-modeling-prepforai/references/ai-compatibility-matrix.md`,
+  `references/naming-conventions.yml`: content absorbed into
+  `references/hisd-power-bi-context.md`.
+
 ## 2026-07-07
 
 ### Added
